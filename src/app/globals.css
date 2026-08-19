@@ -1,26 +1,195 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0c100b;
+  --paper: #f2ece1;
+  --acid: #dffc3a;
+  --moss: #1f6a38;
+  --cobalt: #2a56e0;
+  --muted: #6d675c;
+  --line: #d8d0c3;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-acid: var(--acid);
+  --color-moss: var(--moss);
+  --color-cobalt: var(--cobalt);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-syne);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+a {
+  color: inherit;
+}
+
+.wrap {
+  width: min(1120px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.85rem 1.25rem;
+  font-weight: 650;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-acid {
+  background: var(--acid);
+  color: var(--ink);
+}
+
+.btn-ink {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--line);
+}
+
+.btn:hover {
+  filter: brightness(1.05);
+}
+
+.chip {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.map-live {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: #1a2418;
+  min-height: 280px;
+}
+
+.map-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(223, 252, 58, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(223, 252, 58, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(circle at 50% 60%, black, transparent 80%);
+}
+
+.truck-pin {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--acid);
+  box-shadow: 0 0 0 8px rgba(223, 252, 58, 0.25);
+  animation: crawl 18s linear infinite;
+}
+
+.home-pin {
+  position: absolute;
+  left: 72%;
+  top: 38%;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: white;
+}
+
+@keyframes crawl {
+  0% {
+    left: 8%;
+    top: 78%;
+  }
+  35% {
+    left: 40%;
+    top: 62%;
+  }
+  70% {
+    left: 58%;
+    top: 44%;
+  }
+  100% {
+    left: 70%;
+    top: 40%;
+  }
+}
+
+.hero-scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(12, 16, 11, 0.15) 0%,
+    rgba(12, 16, 11, 0.55) 45%,
+    rgba(12, 16, 11, 0.92) 100%
+  );
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 1.15rem;
+  overflow: hidden;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 0.85rem;
+  padding: 0.8rem 0.9rem;
+  font: inherit;
+  color: var(--ink);
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.pulse {
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
 }

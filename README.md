@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SHOWUP
 
-## Getting Started
+Home services you can see coming. Columbia, SC first. Puerto Rico second.
 
-First, run the development server:
+This is the live product:
+
+- Homeowners book lawn / pressure wash / gutters with a **locked price** and a **live truck pin**
+- Crews get a booking page instead of a Facebook flyer
+- Ops (`/ops`) is the agent desk: paste a public listing, Grok writes the demo + 20-second call script, **you** make the call
+
+It does **not** scrape Facebook, auto-DM, or auto-text. That is how you get banned and fined.
+
+## Run
 
 ```bash
+cd C:\Users\felix\showup
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`.env.local` needs `XAI_API_KEY` for Grok demos. Without it, the agent still returns a template demo.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Routes
 
-## Learn More
+| Path | Who |
+|---|---|
+| `/` | Homeowners |
+| `/book` | Lock a job |
+| `/track/[id]` | Watch the crew |
+| `/shop/[slug]` | Crew or generated demo site |
+| `/pros` | Contractors join + generate demo |
+| `/ops` | You. Pipeline. Review. Ship. |
+| `/waitlist` | Puerto Rico |
 
-To learn more about Next.js, take a look at the following resources:
+## Money later
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Stripe is not connected. Bookings and demos persist in the browser so you can pitch today. When a card key exists, deposit checkout plugs into `/book`.
