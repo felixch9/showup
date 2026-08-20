@@ -70,6 +70,8 @@
 	<string>SHOWUP uses the camera for lawn job photos and crew identity selfies.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>SHOWUP lets you attach existing photos of the job.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SHOWUP may save compressed job photos on your device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>SHOWUP uses your location to match nearby Columbia, SC crews.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>

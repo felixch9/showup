@@ -6,6 +6,7 @@ import { useState } from "react";
 import { CITIES, findCity } from "@/lib/cities";
 import { setCitySlug } from "@/lib/store";
 import { popularSpecs } from "@/lib/spec";
+import { nativePoint } from "@/lib/native";
 
 export default function Home() {
   const router = useRouter();
@@ -45,6 +46,23 @@ export default function Home() {
             />
             <button className="btn btn-acid" type="submit">
               Find crews
+            </button>
+            <button
+              className="btn btn-ghost !text-paper !border-white/30"
+              type="button"
+              onClick={async () => {
+                const pt = await nativePoint();
+                if (!pt) {
+                  setMiss("Location denied — pick Columbia, SC below.");
+                  return;
+                }
+                const columbia = pt.lat > 33.7 && pt.lat < 34.4 && pt.lng < -80.6 && pt.lng > -81.5;
+                const slug = columbia ? "columbia-sc" : "columbia-sc";
+                setCitySlug(slug);
+                router.push(`/c/${slug}`);
+              }}
+            >
+              Use my location
             </button>
           </form>
           {miss ? <p className="mt-3 text-sm text-acid">{miss}</p> : null}
