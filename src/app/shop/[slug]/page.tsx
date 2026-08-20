@@ -38,8 +38,8 @@ export default function ShopPage() {
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {crew.trades.map((tr) => (
               <Link key={tr} href={`/book?service=${tr}`} className="card p-4">
-                <h3 className="text-xl">{d.svc[tr].name}</h3>
-                <p className="text-sm text-[var(--muted)]">{d.svc[tr].blurb}</p>
+                <h3 className="text-xl">{d.svc[tr]?.name ?? tr}</h3>
+                <p className="text-sm text-[var(--muted)]">{d.svc[tr]?.blurb ?? ""}</p>
               </Link>
             ))}
           </div>

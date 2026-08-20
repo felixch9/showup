@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { VEHICLE_TYPES, findCity } from "@/lib/cities";
+import { EQUIPMENT } from "@/lib/capabilities";
 import { emptyIdentity, getIdentity, setIdentity } from "@/lib/store";
 import type { IdentityApp } from "@/lib/types";
 
@@ -64,7 +65,13 @@ export default function Apply() {
 
   function submit() {
     setBusy(true);
-    save({ status: "submitted", matchScore: 97 });
+    save({
+      status: "submitted",
+      matchScore: 97,
+      stripeAccountId: app.stripeAccountId || `acct_demo_${Date.now().toString().slice(-6)}`,
+      backgroundStatus: "pending",
+      identityStatus: "verified",
+    });
     const stages: IdentityApp["status"][] = ["identity", "mvr", "criminal", "approved"];
     stages.forEach((st, i) => {
       setTimeout(() => {
@@ -72,6 +79,9 @@ export default function Apply() {
         setIdentity(cur);
         setApp(cur);
         if (st === "approved") {
+          const done = { ...cur, backgroundStatus: "cleared" as const, identityStatus: "verified" as const };
+          setIdentity(done);
+          setApp(done);
           setBusy(false);
           router.push("/dash");
         }
@@ -151,12 +161,12 @@ export default function Apply() {
             <input
               type="checkbox"
               className="!w-auto mt-1"
-              checked={app.last4}
-              onChange={(e) => save({ last4: e.target.checked })}
+              checked={app.checkrConsent}
+              onChange={(e) => save({ checkrConsent: e.target.checked, last4: e.target.checked })}
             />
-            I confirm I have a US SSN or ITIN. ShowUp will collect last-4 only through a licensed screening vendor in production. This demo stores a yes/no flag — never a number.
+            I agree to a Checkr-hosted background check. SHOWUP never stores an SSN — Checkr collects it on their flow and returns <code>background_check_status</code>.
           </label>
-          <button className="btn btn-acid" disabled={!app.first || !app.last4} onClick={next} type="button">
+          <button className="btn btn-acid" disabled={!app.first || !app.checkrConsent} onClick={next} type="button">
             Continue
           </button>
         </div>
@@ -192,6 +202,25 @@ export default function Apply() {
             Plate
             <input className="!text-ink" value={app.plate} onChange={(e) => save({ plate: e.target.value })} />
           </label>
+          <p className="text-sm">Equipment on the truck — this is how we keep a push mower off a half-acre jungle.</p>
+          <div className="grid grid-cols-2 gap-2">
+            {EQUIPMENT.map((eq) => {
+              const on = (app.equipment ?? []).includes(eq.id);
+              return (
+                <button
+                  key={eq.id}
+                  type="button"
+                  className={`text-left text-sm rounded-xl border p-2 ${on ? "bg-acid text-ink" : "border-white/20"}`}
+                  onClick={() => {
+                    const next = on ? app.equipment.filter((x) => x !== eq.id) : [...(app.equipment ?? []), eq.id];
+                    save({ equipment: next });
+                  }}
+                >
+                  {eq.label}
+                </button>
+              );
+            })}
+          </div>
           <label className="id-slot !text-ink">
             Insurance card photo
             <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => fileName(e, "insurance")} />
@@ -261,7 +290,9 @@ export default function Apply() {
 
       {s === 5 ? (
         <div className="mt-6 grid gap-3">
-          <p className="text-sm text-white/70">W-9 / 1099. Instant pay after each job (like Fast Pay / Crimson) or weekly ACH.</p>
+          <p className="text-sm text-white/70">
+            Payouts go through Stripe Connect Express in production. SHOWUP stores <code>acct_xxx</code>, not routing numbers. Instant or weekly is a Connect payout schedule.
+          </p>
           <label>
             Payout
             <select className="!text-ink" value={app.payout} onChange={(e) => save({ payout: e.target.value as IdentityApp["payout"] })}>
@@ -270,11 +301,8 @@ export default function Apply() {
               <option value="weekly">Weekly direct deposit</option>
             </select>
           </label>
-          <label>
-            Bank account last 4 (demo)
-            <input className="!text-ink" maxLength={4} value={app.bankLast4} onChange={(e) => save({ bankLast4: e.target.value.replace(/\D/g, "") })} />
-          </label>
-          <p className="text-xs opacity-50">Routing/account numbers are not stored in this demo.</p>
+          <p className="text-xs opacity-70">Sandbox Connect account: {app.stripeAccountId || "acct_demo (created on submit)"}</p>
+          <p className="text-xs opacity-50">No bank numbers stored here.</p>
           <button className="btn btn-acid" disabled={!app.payout} onClick={next} type="button">
             Continue
           </button>

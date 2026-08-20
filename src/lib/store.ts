@@ -10,6 +10,7 @@ import type {
   Shop,
 } from "./types";
 import { SEED_LEADS } from "./catalog";
+import { progressPct, stateFromElapsed } from "./job-machine";
 
 const K = {
   jobs: "showup.jobs",
@@ -100,15 +101,13 @@ export function getShop(slug: string) {
 }
 
 export function jobProgress(job: Job) {
-  if (job.status === "done") return { status: "done" as const, pct: 100 };
   if (job.status === "canceled") return { status: "canceled" as const, pct: 0 };
-  const elapsed = (Date.now() - job.createdAt) / 1000;
-  const t = Math.min(1, elapsed / 420);
-  if (t < 0.08) return { status: "booked" as const, pct: Math.max(4, t * 100) };
-  if (t < 0.18) return { status: "confirmed" as const, pct: t * 100 };
-  if (t < 0.55) return { status: "enroute" as const, pct: t * 100 };
-  if (t < 0.92) return { status: "onsite" as const, pct: t * 100 };
-  return { status: "done" as const, pct: 100 };
+  const terminal = ["rated", "paid", "completed", "confirmed"] as const;
+  if (job.machine && terminal.includes(job.machine as (typeof terminal)[number]) && job.status === "rated") {
+    return { status: job.machine, pct: 100 };
+  }
+  const st = stateFromElapsed(Date.now() - job.createdAt, job.machine ?? "searching");
+  return { status: st, pct: progressPct(st) };
 }
 
 export function defaultAccount(): Account {
@@ -143,6 +142,11 @@ export function emptyIdentity(): IdentityApp {
     last: "",
     dob: "",
     last4: false,
+    checkrConsent: false,
+    stripeAccountId: "",
+    backgroundStatus: "not_started",
+    identityStatus: "unverified",
+    equipment: [],
     address: "",
     vehicle: "truck",
     year: "2018",
@@ -208,9 +212,22 @@ export function setMerchant(s: MerchantStore) {
 export function seedOffers(): Offer[] {
   const now = Date.now();
   return [
-    { id: "O-1", service: "Driveway wash", neighborhood: "Forest Acres", miles: 1.8, pay: 22, tip: 8, peak: 3, minutes: 12, expires: now + 28000 },
-    { id: "O-2", service: "Lawn · small", neighborhood: "Irmo", miles: 4.1, pay: 14, tip: 5, peak: 0, minutes: 18, expires: now + 41000 },
-    { id: "O-3", service: "Gutters 1-story", neighborhood: "Shandon", miles: 2.4, pay: 28, tip: 12, peak: 5, minutes: 9, expires: now + 19000 },
+    {
+      id: "O-1",
+      service: "Lawn mowing",
+      serviceId: "lawn",
+      neighborhood: "Forest Acres",
+      miles: 2.3,
+      pay: 70,
+      tip: 8,
+      peak: 5,
+      minutes: 14,
+      expires: now + 40000,
+      customerPays: 102,
+      platformFee: 17,
+      youEarn: 85,
+      bullets: ["Grass: 8–12\"", "Desired height: 3\"", "Lot: ~8,200 sqft", "Front + backyard", "Bag clippings", "Edge driveway"],
+    },
   ];
 }
 

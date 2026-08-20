@@ -82,6 +82,11 @@ export const SERVICES: Service[] = [
     photo: "/photos/gutters.jpg",
     prices: { small: 89, medium: 149, large: 229 },
   },
+  { id: "wash", minutes: 60, photo: "/photos/split.jpg", prices: { small: 59, medium: 129, large: 249 } },
+  { id: "cleanup", minutes: 60, photo: "/photos/pr.jpg", prices: { small: 45, medium: 75, large: 120 } },
+  { id: "leaf", minutes: 50, photo: "/photos/lawn.jpg", prices: { small: 39, medium: 59, large: 89 } },
+  { id: "hedge", minutes: 40, photo: "/photos/pr.jpg", prices: { small: 35, medium: 60, large: 95 } },
+  { id: "junk", minutes: 60, photo: "/photos/street.jpg", prices: { small: 79, medium: 140, large: 220 } },
 ];
 
 export const CREWS: Crew[] = [
@@ -100,6 +105,8 @@ export const CREWS: Crew[] = [
     bio: "Shows up in a marked truck. Sends before/after photos before he leaves the driveway.",
     bioEs: "Llega en camión marcado. Manda fotos del antes y después antes de irse.",
     bilingual: true,
+    equipment: ["pressure", "surface_cleaner", "soft_wash", "ladder", "truck"],
+    maxStories: 2,
   },
   {
     id: "keisha",
@@ -116,6 +123,8 @@ export const CREWS: Crew[] = [
     bio: "Weekly and one-off cuts. Edges the sidewalk. Does not ghost on rainy Mondays.",
     bioEs: "Cortes semanales y sueltos. Orilla la acera. No desaparece los lunes de lluvia.",
     bilingual: false,
+    equipment: ["riding", "zero_turn", "weed_eater", "edger", "blower", "truck"],
+    maxStories: 1,
   },
   {
     id: "marcus",
@@ -132,6 +141,8 @@ export const CREWS: Crew[] = [
     bio: "Same-day driveway washes when the board is open. Price on the app is the price on the invoice.",
     bioEs: "Lavado de entrada el mismo día si hay cupo. El precio de la app es el de la factura.",
     bilingual: false,
+    equipment: ["pressure", "surface_cleaner", "push", "weed_eater", "truck"],
+    maxStories: 1,
   },
   {
     id: "ana",
@@ -148,6 +159,8 @@ export const CREWS: Crew[] = [
     bio: "English or Spanish on the job. Building the San Juan roster next.",
     bioEs: "Inglés o español en el trabajo. Armando el equipo de San Juan después.",
     bilingual: true,
+    equipment: ["push", "weed_eater", "edger", "blower", "ladder"],
+    maxStories: 2,
   },
   {
     id: "jamal",
@@ -165,6 +178,8 @@ export const CREWS: Crew[] = [
     bioEs: "Equipo Platinum. Orilla, embolsa, avisa al doblar a tu calle.",
     bilingual: false,
     tier: "platinum",
+    equipment: ["zero_turn", "riding", "weed_eater", "edger", "blower", "trailer", "truck"],
+    maxStories: 1,
   },
   {
     id: "sofia",
@@ -182,6 +197,8 @@ export const CREWS: Crew[] = [
     bioEs: "Lavado suave que no quita pintura. Español o inglés.",
     bilingual: true,
     tier: "gold",
+    equipment: ["pressure", "soft_wash", "surface_cleaner", "ladder", "truck"],
+    maxStories: 3,
   },
   {
     id: "derek",
@@ -199,6 +216,8 @@ export const CREWS: Crew[] = [
     bioEs: "Entrada y césped el mismo día cuando la pizarra está roja.",
     bilingual: false,
     tier: "gold",
+    equipment: ["riding", "pressure", "ladder", "truck", "weed_eater"],
+    maxStories: 2,
   },
   {
     id: "nori",
@@ -216,6 +235,8 @@ export const CREWS: Crew[] = [
     bioEs: "Antes y después en cada fachada. Sin extras sorpresa.",
     bilingual: true,
     tier: "platinum",
+    equipment: ["pressure", "soft_wash", "ladder", "surface_cleaner"],
+    maxStories: 3,
   },
   {
     id: "edgardo",
@@ -233,6 +254,8 @@ export const CREWS: Crew[] = [
     bioEs: "Updates por WhatsApp. ATH Móvil cuando se active. Corte de grama de verdad.",
     bilingual: true,
     tier: "platinum",
+    equipment: ["riding", "pressure", "truck", "weed_eater", "blower"],
+    maxStories: 2,
   },
 ];
 

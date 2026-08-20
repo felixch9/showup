@@ -4,15 +4,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { cityBySlug } from "@/lib/cities";
-import { CREWS, SERVICES } from "@/lib/catalog";
+import { CREWS } from "@/lib/catalog";
+import { popularSpecs } from "@/lib/spec";
 import { setCitySlug } from "@/lib/store";
-import { useI18n } from "@/components/Providers";
 import { BottomNav } from "@/components/Shell";
 import { MapLive } from "@/components/MapLive";
 
 export default function CityHome() {
   const { city } = useParams<{ city: string }>();
-  const { d } = useI18n();
   const c = cityBySlug(city) ?? cityBySlug("columbia-sc")!;
 
   useEffect(() => {
@@ -30,29 +29,33 @@ export default function CityHome() {
             <p className="chip w-fit">
               {c.name}, {c.state} · {c.crews} crews · {c.eta} min
             </p>
-            <h1 className="text-5xl mt-4">What do you need done?</h1>
+            <h1 className="text-5xl mt-4">What does your home need?</h1>
             <p className="mt-3 text-white/70 max-w-lg">
-              Same flow as a food app: pick a service, lock a price, watch the truck. ShowPass knocks the service fee to $0.
+              Pick a service. Describe the property. Lock a price. A qualified crew accepts — not a 21&quot; push mower on a jungle lot.
             </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {SERVICES.map((s) => (
-                <Link key={s.id} className="btn btn-acid !py-2" href={`/book?service=${s.id}&city=${c.slug}`}>
-                  {d.svc[s.id].name}
-                </Link>
-              ))}
-            </div>
           </div>
           <MapLive label={`${show[0]?.name ?? "Crew"} · ${c.eta} min out`} eta={c.name} />
         </div>
       </section>
 
       <section className="wrap py-10">
-        <div className="flex justify-between items-end gap-4">
-          <h2 className="text-3xl">Crews near you</h2>
-          <Link href="/pass" className="text-sm font-bold">
-            ShowPass · $0 fees →
-          </Link>
+        <h2 className="text-3xl">Popular near you</h2>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {popularSpecs().map((s) => (
+            <Link key={s.id} href={`/book?service=${s.id}&city=${c.slug}`} className="card">
+              <img src={s.photo} alt="" className="h-36 w-full object-cover" />
+              <div className="p-4">
+                <h3 className="text-xl">{s.name}</h3>
+                <p className="text-sm text-[var(--muted)]">{s.category}</p>
+                <p className="mt-1 font-bold">from ${s.from}</p>
+              </div>
+            </Link>
+          ))}
         </div>
+      </section>
+
+      <section className="wrap pb-10">
+        <h2 className="text-3xl">Crews near you</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           {show.map((crew) => (
             <Link key={crew.id} href={`/shop/${crew.slug}`} className="card flex gap-4 p-3">
@@ -63,7 +66,7 @@ export default function CityHome() {
                 </p>
                 <h3 className="text-2xl mt-1">{crew.name}</h3>
                 <p className="text-sm">{crew.trade}</p>
-                <p className="text-xs text-[var(--muted)] mt-1">{crew.areas.join(" · ")}</p>
+                <p className="text-xs text-[var(--muted)] mt-1">{(crew.equipment ?? []).slice(0, 4).join(" · ")}</p>
               </div>
             </Link>
           ))}

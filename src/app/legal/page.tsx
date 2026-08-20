@@ -7,10 +7,12 @@ export default function Legal() {
       </p>
       <h2 className="text-2xl mt-8">Identity & FCRA</h2>
       <p className="mt-2">
-        Production will use a licensed consumer reporting agency for SSN trace, criminal history (where permitted, typically 7 years), sex-offender registry, and MVR for drivers. This website is a sandbox: it does not transmit Social Security numbers, ID images, or biometric templates to a server. File inputs stay in the browser.
+        Production uses a Checkr-hosted candidate flow for disclosures, SSN, and consent. SHOWUP stores <code>background_check_status</code> and <code>identity_status</code> — not raw SSNs or ID images. This sandbox never uploads those.
       </p>
-      <h2 className="text-2xl mt-8">Payments</h2>
-      <p className="mt-2">Deposits, ShowPass, and instant pay are simulated until Stripe / ATH Móvil are connected.</p>
+      <h2 className="text-2xl mt-8">Payments (Stripe Connect)</h2>
+      <p className="mt-2">
+        Customer charge → SHOWUP platform fee → crew connected account. Connect Express onboarding holds KYC. Instant/weekly payouts are Connect payouts. Demo does not move money.
+      </p>
       <h2 className="text-2xl mt-8">Independent contractors</h2>
       <p className="mt-2">Crews are 1099 contractors. Customers contract through the platform. Insurance COI required before live jobs in a real city.</p>
     </main>

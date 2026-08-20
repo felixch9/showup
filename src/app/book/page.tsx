@@ -1,182 +1,224 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import { SERVICES } from "@/lib/catalog";
-import { cityForZip, depositOf, feeOf, jobId, quotePrice, validZip } from "@/lib/quote";
-import { pickCrew } from "@/lib/catalog";
-import { getAccount, upsertJob } from "@/lib/store";
-import { useI18n } from "@/components/Providers";
+import { SpecField } from "@/components/booking/SpecFields";
+import { matchCrews } from "@/lib/capabilities";
+import { cityForZip, jobId, validZip } from "@/lib/quote";
+import { buildQuote, requiredPhotosMet, type Answers } from "@/lib/quote-engine";
+import { popularSpecs, resolveServiceId, specById } from "@/lib/spec";
+import { getAccount, setOffers, upsertJob } from "@/lib/store";
 import type { ServiceId } from "@/lib/types";
 
+function defaults(id: string): Answers {
+  const resolved = resolveServiceId(id);
+  if (resolved === "lawn") {
+    return {
+      lot_size: "6k_10k",
+      current_grass_height: "8_12",
+      desired_grass_height: 3,
+      clippings: "mulch",
+      zones: ["front", "back"],
+      addons: ["edge"],
+      photos: [],
+    };
+  }
+  if (resolved === "wash") {
+    const surfaces = id === "housewash" ? ["house"] : id === "driveway" ? ["driveway"] : ["driveway"];
+    return { surfaces, stories: "1", condition: "algae", features: ["water"], photos: [] };
+  }
+  return { photos: [] };
+}
+
 function BookInner() {
-  const { d, lang } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
-  const [service, setService] = useState<ServiceId>(
-    (params.get("service") as ServiceId) || "driveway",
-  );
-  const [size, setSize] = useState("medium");
-  const [address, setAddress] = useState("");
+  const incoming = (params.get("service") as ServiceId) || "lawn";
+  const [service, setService] = useState<ServiceId>(resolveServiceId(incoming));
+  const [answers, setAnswers] = useState<Answers>(() => defaults(incoming));
+  const [address, setAddress] = useState("123 Main Street");
   const [zip, setZip] = useState("29206");
-  const [when, setWhen] = useState<string>(d.today);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [notes, setNotes] = useState("");
-  const [promo, setPromo] = useState("");
-  const [tip, setTip] = useState(8);
-  const [contactless, setContactless] = useState(true);
   const [asap, setAsap] = useState(true);
+  const [when, setWhen] = useState("Today, 3–5pm");
+  const [tip, setTip] = useState(8);
+  const [promo, setPromo] = useState("");
   const [pass, setPass] = useState(false);
+  const [notes, setNotes] = useState("");
 
-  useEffect(() => {
-    setPass(getAccount().pass);
-  }, []);
+  useEffect(() => setPass(getAccount().pass), []);
 
-  const price = quotePrice(service, size);
-  const fee = feeOf(price, pass);
-  const off = promo.toUpperCase() === "FIRST10" ? Math.min(10, price) : 0;
-  const total = Math.max(0, price + fee + tip - off);
-  const deposit = depositOf(total);
-  const areaOk = validZip(zip);
-  const paint = service === "paint";
+  const spec = specById(service)!;
   const city = cityForZip(zip);
+  const quote = useMemo(
+    () => buildQuote(service, answers, { pass, tip, promo, urgency: asap ? "asap" : "schedule" }),
+    [service, answers, pass, tip, promo, asap],
+  );
+  const photosOk = requiredPhotosMet(service, answers);
+  const areaOk = validZip(zip);
+  const canBook = areaOk && photosOk && !quote.manualReview && quote.total > 0;
 
-  const summary = useMemo(() => d.svc[service].name, [d, service]);
+  function switchService(id: ServiceId) {
+    setService(id);
+    setAnswers(defaults(id));
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!areaOk) return;
-    const crew = pickCrew(service, zip);
+    if (!canBook) return;
+    const crew = matchCrews(service, answers, zip)[0];
     const id = jobId();
     upsertJob({
       id,
       createdAt: Date.now(),
       service,
-      size,
+      size: String(answers.lot_size ?? answers.stories ?? "standard"),
       address,
       zip,
       when: asap ? "ASAP" : when,
       name,
       phone,
       notes,
-      price: paint ? 0 : total,
-      deposit: paint ? 0 : deposit,
-      fee,
+      price: quote.total,
+      deposit: quote.deposit,
+      fee: quote.fee,
       tip,
       promo,
       crewId: crew.id,
-      status: "booked",
-      lang,
+      status: "searching",
+      lang: "en",
       market: city.slug,
       scheduled: !asap,
-      contactless,
+      contactless: true,
+      answers,
+      quoteLines: quote.lines,
+      minutes: quote.minutes,
+      providerEarn: quote.providerEarn,
+      platformCut: quote.platformCut,
+      machine: "searching",
+      needs: quote.needs,
     });
+    setOffers([
+      {
+        id: `O-${id}`,
+        jobId: id,
+        service: spec.name,
+        serviceId: service,
+        neighborhood: address,
+        miles: 2.3,
+        pay: quote.providerEarn - tip,
+        tip,
+        peak: asap ? 8 : 0,
+        minutes: Math.max(8, Math.round(quote.minutes * 0.15)),
+        expires: Date.now() + 45000,
+        customerPays: quote.total,
+        platformFee: quote.platformCut,
+        youEarn: quote.providerEarn,
+        bullets: quote.lines.filter((l) => l.amount !== 0).slice(0, 8).map((l) => `${l.label}${l.amount ? ` ${l.amount > 0 ? "+" : ""}$${l.amount}` : ""}`),
+      },
+    ]);
     router.push(`/track/${id}`);
   }
 
   return (
-    <main className="wrap py-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-      <form className="grid gap-4" onSubmit={submit}>
-        <h1 className="text-5xl">{d.bookTitle}</h1>
+    <main className="wrap py-8 pb-16 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+      <form className="grid gap-8" onSubmit={submit}>
+        <div>
+          <p className="text-sm text-[var(--muted)]">{spec.category} · {city.name}, {city.state}</p>
+          <h1 className="text-5xl mt-1">{spec.name}</h1>
+          <p className="mt-2 text-[var(--muted)]">Service → property → condition → add-ons → photos → locked price. Same modifier model as a DoorDash item, built for jobs.</p>
+        </div>
         <label>
-          {d.pickService}
-          <select value={service} onChange={(e) => setService(e.target.value as ServiceId)}>
-            {SERVICES.map((s) => (
-              <option key={s.id} value={s.id}>
-                {d.svc[s.id].name}
-              </option>
+          Service
+          <select value={service} onChange={(e) => switchService(e.target.value as ServiceId)}>
+            {popularSpecs().concat(specById("paint") ? [specById("paint")!] : []).map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
         </label>
-        <label>
-          {d.yard}
-          <select value={size} onChange={(e) => setSize(e.target.value)}>
-            <option value="small">{d.size.small}</option>
-            <option value="medium">{d.size.medium}</option>
-            <option value="large">{d.size.large}</option>
-          </select>
-        </label>
-        <label>
-          {d.address}
-          <input required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="4423 Forest Drive" />
-        </label>
-        <label>
-          {d.zip}
-          <input required value={zip} onChange={(e) => setZip(e.target.value)} inputMode="numeric" />
-        </label>
-        {!areaOk ? (
-          <p className="text-sm text-cobalt">Need a 5-digit US or PR ZIP.</p>
-        ) : (
-          <p className="text-sm text-[var(--muted)]">
-            Routing to {city.name}, {city.state}
-          </p>
-        )}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label>
+            Service property
+            <input required value={address} onChange={(e) => setAddress(e.target.value)} />
+          </label>
+          <label>
+            ZIP
+            <input required value={zip} onChange={(e) => setZip(e.target.value)} inputMode="numeric" />
+          </label>
+        </div>
+        {spec.questions.map((q) => (
+          <SpecField key={q.id} q={q} answers={answers} onChange={setAnswers} />
+        ))}
         <label className="!flex items-center gap-2">
           <input type="checkbox" className="!w-auto" checked={asap} onChange={(e) => setAsap(e.target.checked)} />
-          ASAP · live pin
+          ASAP
         </label>
-        <label className="!flex items-center gap-2">
-          <input type="checkbox" className="!w-auto" checked={contactless} onChange={(e) => setContactless(e.target.checked)} />
-          No-contact · text when on site
-        </label>
+        {!asap ? (
+          <label>
+            Window
+            <select value={when} onChange={(e) => setWhen(e.target.value)}>
+              <option>Today, 3–5pm</option>
+              <option>Tomorrow, 8–10am</option>
+              <option>Saturday, 9–12</option>
+            </select>
+          </label>
+        ) : null}
         <label>
           Promo
           <input value={promo} onChange={(e) => setPromo(e.target.value)} placeholder="FIRST10" />
         </label>
         <label>
-          Tip for crew
+          Tip
           <select value={tip} onChange={(e) => setTip(Number(e.target.value))}>
             <option value={0}>$0</option>
             <option value={5}>$5</option>
             <option value={8}>$8</option>
             <option value={12}>$12</option>
-            <option value={20}>$20</option>
-          </select>
-        </label>
-        {paint ? <p className="text-sm text-[var(--muted)]">{d.paintNote}</p> : null}
-        <label>
-          {d.when}
-          <select value={when} onChange={(e) => setWhen(e.target.value)}>
-            <option>{d.today}</option>
-            <option>{d.tomorrow}</option>
-            <option>{d.sat}</option>
           </select>
         </label>
         <label>
-          {d.name}
+          Your name
           <input required value={name} onChange={(e) => setName(e.target.value)} />
         </label>
         <label>
-          {d.phone}
+          Mobile
           <input required value={phone} onChange={(e) => setPhone(e.target.value)} />
         </label>
         <label>
-          {d.notes}
-          <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+          Gate / dogs / HOA
+          <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </label>
-        <button className="btn btn-acid" disabled={!areaOk} type="submit">
-          {d.confirm} {paint ? "" : `· $${deposit}`}
+        {quote.manualReview ? (
+          <p className="text-sm text-cobalt">This one needs a human look (3-story, 18&quot; grass, or paint). We still take the request — no instant lock.</p>
+        ) : null}
+        {!photosOk ? <p className="text-sm">Add the required photos to lock the price.</p> : null}
+        <button className="btn btn-acid" disabled={!canBook && !quote.manualReview} type="submit">
+          {quote.manualReview ? "Request review" : `Book now · $${quote.deposit} deposit`}
         </button>
       </form>
-      <aside className="card overflow-hidden h-fit">
-        <img src={SERVICES.find((s) => s.id === service)?.photo} alt="" className="h-48 w-full object-cover" />
+      <aside className="card h-fit sticky top-20 overflow-hidden">
+        <img src={spec.photo} alt="" className="h-40 w-full object-cover" />
         <div className="p-5">
-          <p className="text-sm text-[var(--muted)]">{summary}</p>
-          <p className="text-4xl font-bold mt-2">{paint ? "Quote" : `$${total.toFixed(2)}`}</p>
-          {!paint ? (
-            <ul className="mt-4 text-sm space-y-2">
-              <li className="flex justify-between"><span>Job</span><b>${price}</b></li>
-              <li className="flex justify-between"><span>Service fee {pass ? "(ShowPass $0)" : ""}</span><b>${fee.toFixed(2)}</b></li>
-              <li className="flex justify-between"><span>Tip</span><b>${tip}</b></li>
-              {off ? <li className="flex justify-between"><span>FIRST10</span><b>-${off}</b></li> : null}
-              <li className="flex justify-between"><span>{d.deposit}</span><b>${deposit}</b></li>
-              <li className="flex justify-between"><span>{d.rest}</span><b>${(total - deposit).toFixed(2)}</b></li>
-            </ul>
-          ) : null}
+          <p className="text-sm text-[var(--muted)]">Instant quote</p>
+          <p className="text-4xl font-bold">${quote.total.toFixed(2)}</p>
+          <p className="text-xs text-[var(--muted)] mt-1">~{Math.round(quote.minutes / 60) || 1}h {quote.minutes % 60}m · Stripe Connect in production</p>
+          <ul className="mt-4 text-sm space-y-1.5">
+            {quote.lines.map((l, i) => (
+              <li key={`${l.label}-${i}`} className="flex justify-between gap-2">
+                <span>{l.label}</span>
+                <b>{l.amount < 0 ? `-$${Math.abs(l.amount)}` : `$${l.amount}`}</b>
+              </li>
+            ))}
+            <li className="flex justify-between border-t border-[var(--line)] pt-2">
+              <span>SHOWUP fee {pass ? "(Pass $0)" : ""}</span>
+              <b>${quote.fee.toFixed(2)}</b>
+            </li>
+            <li className="flex justify-between"><span>Tip</span><b>${quote.tip}</b></li>
+            <li className="flex justify-between"><span>Deposit now</span><b>${quote.deposit}</b></li>
+          </ul>
           <p className="mt-4 text-xs text-[var(--muted)]">
-            Demo checkout — no card charged. Stripe plugs in when Felix connects it. The slot still holds on this phone.
+            Crew sees ${quote.providerEarn.toFixed(2)} after platform cut ${quote.platformCut.toFixed(2)}. Only crews with the right kit get the offer — a 21&quot; push mower does not get 14&quot; grass on a half acre.
           </p>
         </div>
       </aside>

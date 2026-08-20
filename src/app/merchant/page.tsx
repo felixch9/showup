@@ -22,7 +22,7 @@ export default function MerchantHome() {
   }
 
   function confirm(j: Job) {
-    const next = { ...j, status: "confirmed" as const };
+    const next = { ...j, status: "accepted" as const, machine: "accepted" as const };
     upsertJob(next);
     setJobs(getJobs());
   }
@@ -55,7 +55,7 @@ export default function MerchantHome() {
               </div>
               <h2 className="text-xl mt-1">{j.service} · {j.size}</h2>
               <p className="text-sm">{j.address} {j.zip}</p>
-              {j.status === "booked" ? (
+              {j.status === "searching" || j.status === "offered" ? (
                 <button className="btn btn-acid mt-3" type="button" onClick={() => confirm(j)}>
                   Confirm · {store.prepMin} min
                 </button>

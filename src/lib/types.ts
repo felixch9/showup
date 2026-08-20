@@ -1,12 +1,8 @@
+import type { MachineState } from "./job-machine";
+
 export type Lang = "en" | "es";
 export type Market = string;
-export type JobStatus =
-  | "booked"
-  | "confirmed"
-  | "enroute"
-  | "onsite"
-  | "done"
-  | "canceled";
+export type JobStatus = MachineState;
 export type LeadStatus =
   | "new"
   | "mocked"
@@ -19,10 +15,15 @@ export type ServiceId =
   | "lawn"
   | "driveway"
   | "housewash"
+  | "wash"
   | "gutters"
   | "mulch"
   | "paint"
-  | "handyman";
+  | "handyman"
+  | "hedge"
+  | "leaf"
+  | "junk"
+  | "cleanup";
 
 export type Service = {
   id: ServiceId;
@@ -47,6 +48,8 @@ export type Crew = {
   bioEs: string;
   bilingual: boolean;
   tier?: "silver" | "gold" | "platinum";
+  equipment?: string[];
+  maxStories?: number;
 };
 
 export type Job = {
@@ -71,6 +74,13 @@ export type Job = {
   market: Market;
   scheduled: boolean;
   contactless: boolean;
+  answers?: Record<string, unknown>;
+  quoteLines?: { label: string; amount: number }[];
+  minutes?: number;
+  providerEarn?: number;
+  platformCut?: number;
+  machine?: import("./job-machine").MachineState;
+  needs?: string[];
 };
 
 export type Lead = {
@@ -124,6 +134,11 @@ export type IdentityApp = {
   last: string;
   dob: string;
   last4: boolean;
+  checkrConsent: boolean;
+  stripeAccountId: string;
+  backgroundStatus: "not_started" | "pending" | "cleared" | "consider";
+  identityStatus: "unverified" | "verified";
+  equipment: string[];
   address: string;
   vehicle: string;
   year: string;
@@ -167,6 +182,7 @@ export type CrewSession = {
 export type Offer = {
   id: string;
   service: string;
+  serviceId?: string;
   neighborhood: string;
   miles: number;
   pay: number;
@@ -174,6 +190,11 @@ export type Offer = {
   peak: number;
   minutes: number;
   expires: number;
+  customerPays?: number;
+  platformFee?: number;
+  youEarn?: number;
+  bullets?: string[];
+  jobId?: string;
 };
 
 export type MerchantStore = {

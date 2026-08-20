@@ -264,3 +264,51 @@ label {
     opacity: 0;
   }
 }
+
+.grass-scale {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 0.45rem;
+}
+
+.grass-scale button {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 0.55rem 0.3rem 0.7rem;
+  min-height: 148px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.grass-scale button.on {
+  border-color: var(--ink);
+  background: #e9f6b0;
+}
+
+.grass-scale .blade {
+  width: 42%;
+  background: linear-gradient(#3c8a3a, #1f5c28);
+  border-radius: 6px 6px 2px 2px;
+  margin-bottom: auto;
+  min-height: 18px;
+}
+
+.grass-scale b {
+  font-size: 0.72rem;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.grass-scale small {
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #1f6a38;
+}

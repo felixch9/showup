@@ -5,11 +5,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CITIES, findCity } from "@/lib/cities";
 import { setCitySlug } from "@/lib/store";
-import { SERVICES } from "@/lib/catalog";
-import { useI18n } from "@/components/Providers";
+import { popularSpecs } from "@/lib/spec";
 
 export default function Home() {
-  const { d } = useI18n();
   const router = useRouter();
   const [q, setQ] = useState("");
   const [miss, setMiss] = useState("");
@@ -116,10 +114,13 @@ export default function Home() {
 
       <section className="pb-16">
         <div className="wrap grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {SERVICES.map((s) => (
+          {popularSpecs().map((s) => (
             <Link key={s.id} href={`/book?service=${s.id}`} className="card">
               <img src={s.photo} alt="" className="h-36 w-full object-cover" />
-              <p className="p-3 font-bold">{d.svc[s.id].name}</p>
+              <div className="p-3">
+                <p className="font-bold">{s.name}</p>
+                <p className="text-sm text-[var(--muted)]">from ${s.from}</p>
+              </div>
             </Link>
           ))}
         </div>
