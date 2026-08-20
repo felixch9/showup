@@ -1,6 +1,12 @@
 export type Lang = "en" | "es";
-export type Market = "columbia" | "puerto-rico";
-export type JobStatus = "booked" | "enroute" | "onsite" | "done" | "canceled";
+export type Market = string;
+export type JobStatus =
+  | "booked"
+  | "confirmed"
+  | "enroute"
+  | "onsite"
+  | "done"
+  | "canceled";
 export type LeadStatus =
   | "new"
   | "mocked"
@@ -15,7 +21,8 @@ export type ServiceId =
   | "housewash"
   | "gutters"
   | "mulch"
-  | "paint";
+  | "paint"
+  | "handyman";
 
 export type Service = {
   id: ServiceId;
@@ -39,6 +46,7 @@ export type Crew = {
   bio: string;
   bioEs: string;
   bilingual: boolean;
+  tier?: "silver" | "gold" | "platinum";
 };
 
 export type Job = {
@@ -54,10 +62,15 @@ export type Job = {
   notes: string;
   price: number;
   deposit: number;
+  fee: number;
+  tip: number;
+  promo: string;
   crewId: string;
   status: JobStatus;
   lang: Lang;
   market: Market;
+  scheduled: boolean;
+  contactless: boolean;
 };
 
 export type Lead = {
@@ -88,4 +101,85 @@ export type Shop = {
   about: string;
   cta: string;
   lang: Lang;
+};
+
+export type Account = {
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  addresses: { label: string; line: string; zip: string }[];
+  pass: boolean;
+  passUntil: number;
+  payments: { brand: string; last4: string }[];
+};
+
+export type IdentityApp = {
+  step: number;
+  email: string;
+  phone: string;
+  zip: string;
+  city: string;
+  first: string;
+  last: string;
+  dob: string;
+  last4: boolean;
+  address: string;
+  vehicle: string;
+  year: string;
+  make: string;
+  model: string;
+  plate: string;
+  idFront: string;
+  idBack: string;
+  selfie: string;
+  insurance: string;
+  registration: string;
+  fcra: boolean;
+  mvr: boolean;
+  quiz: number;
+  payout: "instant" | "weekly" | "";
+  bankLast4: string;
+  status:
+    | "draft"
+    | "submitted"
+    | "identity"
+    | "mvr"
+    | "criminal"
+    | "approved"
+    | "needs_review";
+  matchScore: number;
+};
+
+export type CrewSession = {
+  online: boolean;
+  tier: "none" | "silver" | "gold" | "platinum";
+  rating: number;
+  acceptance: number;
+  completion: number;
+  onTime: number;
+  today: number;
+  week: number;
+  tips: number;
+  jobs: number;
+};
+
+export type Offer = {
+  id: string;
+  service: string;
+  neighborhood: string;
+  miles: number;
+  pay: number;
+  tip: number;
+  peak: number;
+  minutes: number;
+  expires: number;
+};
+
+export type MerchantStore = {
+  name: string;
+  open: boolean;
+  prepMin: number;
+  hours: string;
+  pausedUntil: number;
 };

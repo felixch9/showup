@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { SERVICES } from "@/lib/catalog";
-import { depositOf, inColumbia, jobId, quotePrice } from "@/lib/quote";
+import { cityForZip, depositOf, feeOf, jobId, quotePrice, validZip } from "@/lib/quote";
 import { pickCrew } from "@/lib/catalog";
-import { upsertJob } from "@/lib/store";
+import { getAccount, upsertJob } from "@/lib/store";
 import { useI18n } from "@/components/Providers";
 import type { ServiceId } from "@/lib/types";
 
@@ -24,11 +24,24 @@ function BookInner() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [promo, setPromo] = useState("");
+  const [tip, setTip] = useState(8);
+  const [contactless, setContactless] = useState(true);
+  const [asap, setAsap] = useState(true);
+  const [pass, setPass] = useState(false);
+
+  useEffect(() => {
+    setPass(getAccount().pass);
+  }, []);
 
   const price = quotePrice(service, size);
-  const deposit = depositOf(price);
-  const areaOk = inColumbia(zip);
+  const fee = feeOf(price, pass);
+  const off = promo.toUpperCase() === "FIRST10" ? Math.min(10, price) : 0;
+  const total = Math.max(0, price + fee + tip - off);
+  const deposit = depositOf(total);
+  const areaOk = validZip(zip);
   const paint = service === "paint";
+  const city = cityForZip(zip);
 
   const summary = useMemo(() => d.svc[service].name, [d, service]);
 
@@ -44,16 +57,21 @@ function BookInner() {
       size,
       address,
       zip,
-      when,
+      when: asap ? "ASAP" : when,
       name,
       phone,
       notes,
-      price: paint ? 0 : price,
+      price: paint ? 0 : total,
       deposit: paint ? 0 : deposit,
+      fee,
+      tip,
+      promo,
       crewId: crew.id,
       status: "booked",
       lang,
-      market: "columbia",
+      market: city.slug,
+      scheduled: !asap,
+      contactless,
     });
     router.push(`/track/${id}`);
   }
@@ -88,7 +106,35 @@ function BookInner() {
           {d.zip}
           <input required value={zip} onChange={(e) => setZip(e.target.value)} inputMode="numeric" />
         </label>
-        {!areaOk ? <p className="text-sm text-cobalt">{d.outOfArea}</p> : null}
+        {!areaOk ? (
+          <p className="text-sm text-cobalt">Need a 5-digit US or PR ZIP.</p>
+        ) : (
+          <p className="text-sm text-[var(--muted)]">
+            Routing to {city.name}, {city.state}
+          </p>
+        )}
+        <label className="!flex items-center gap-2">
+          <input type="checkbox" className="!w-auto" checked={asap} onChange={(e) => setAsap(e.target.checked)} />
+          ASAP · live pin
+        </label>
+        <label className="!flex items-center gap-2">
+          <input type="checkbox" className="!w-auto" checked={contactless} onChange={(e) => setContactless(e.target.checked)} />
+          No-contact · text when on site
+        </label>
+        <label>
+          Promo
+          <input value={promo} onChange={(e) => setPromo(e.target.value)} placeholder="FIRST10" />
+        </label>
+        <label>
+          Tip for crew
+          <select value={tip} onChange={(e) => setTip(Number(e.target.value))}>
+            <option value={0}>$0</option>
+            <option value={5}>$5</option>
+            <option value={8}>$8</option>
+            <option value={12}>$12</option>
+            <option value={20}>$20</option>
+          </select>
+        </label>
         {paint ? <p className="text-sm text-[var(--muted)]">{d.paintNote}</p> : null}
         <label>
           {d.when}
@@ -118,11 +164,15 @@ function BookInner() {
         <img src={SERVICES.find((s) => s.id === service)?.photo} alt="" className="h-48 w-full object-cover" />
         <div className="p-5">
           <p className="text-sm text-[var(--muted)]">{summary}</p>
-          <p className="text-4xl font-bold mt-2">{paint ? "Quote" : `$${price}`}</p>
+          <p className="text-4xl font-bold mt-2">{paint ? "Quote" : `$${total.toFixed(2)}`}</p>
           {!paint ? (
             <ul className="mt-4 text-sm space-y-2">
+              <li className="flex justify-between"><span>Job</span><b>${price}</b></li>
+              <li className="flex justify-between"><span>Service fee {pass ? "(ShowPass $0)" : ""}</span><b>${fee.toFixed(2)}</b></li>
+              <li className="flex justify-between"><span>Tip</span><b>${tip}</b></li>
+              {off ? <li className="flex justify-between"><span>FIRST10</span><b>-${off}</b></li> : null}
               <li className="flex justify-between"><span>{d.deposit}</span><b>${deposit}</b></li>
-              <li className="flex justify-between"><span>{d.rest}</span><b>${price - deposit}</b></li>
+              <li className="flex justify-between"><span>{d.rest}</span><b>${(total - deposit).toFixed(2)}</b></li>
             </ul>
           ) : null}
           <p className="mt-4 text-xs text-[var(--muted)]">

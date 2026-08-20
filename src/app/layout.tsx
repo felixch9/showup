@@ -16,9 +16,9 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "SHOWUP — Home services you can see coming. Columbia, SC",
+  title: "SHOWUP — Home services you can see coming",
   description:
-    "Book lawn, pressure washing, and gutters in Columbia, SC. Locked prices, live truck tracking, deposit so they actually show up. Puerto Rico next.",
+    "Nationwide home services marketplace. Book lawn, pressure washing, gutters. Locked prices, live tracking, identity-verified crews. Consumer, crew, and business apps.",
   icons: { icon: "/favicon.svg" },
 };
 

@@ -1,145 +1,127 @@
 "use client";
 
 import Link from "next/link";
-import { AREAS_SC, CREWS, SERVICES } from "@/lib/catalog";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { CITIES, findCity } from "@/lib/cities";
+import { setCitySlug } from "@/lib/store";
+import { SERVICES } from "@/lib/catalog";
 import { useI18n } from "@/components/Providers";
-import { MapLive } from "@/components/MapLive";
-import type { ServiceId } from "@/lib/types";
 
 export default function Home() {
   const { d } = useI18n();
+  const router = useRouter();
+  const [q, setQ] = useState("");
+  const [miss, setMiss] = useState("");
+
+  function go(e: React.FormEvent) {
+    e.preventDefault();
+    const city = findCity(q) || CITIES.find((c) => c.name.toLowerCase() === q.toLowerCase());
+    if (!city) {
+      setMiss("We launch city-by-city. Pick one below — any US ZIP still books a demo crew.");
+      return;
+    }
+    setCitySlug(city.slug);
+    router.push(`/c/${city.slug}`);
+  }
 
   return (
     <main>
-      <section className="relative min-h-[92vh] text-paper">
-        <img
-          src="/photos/hero.jpg"
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+      <section className="relative min-h-[88vh] text-paper">
+        <img src="/photos/hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="hero-scrim absolute inset-0" />
-        <div className="wrap relative flex min-h-[92vh] flex-col justify-end pb-14 pt-28">
-          <p className="chip w-fit mb-4">{d.heroKicker}</p>
-          <h1 className="max-w-4xl text-5xl sm:text-7xl font-extrabold">{d.hero}</h1>
-          <p className="mt-5 max-w-xl text-lg text-white/80">{d.lede}</p>
+        <div className="wrap relative flex min-h-[88vh] flex-col justify-end pb-16 pt-24">
+          <p className="chip w-fit">7,000+ neighborhoods · identity-verified crews</p>
+          <h1 className="max-w-4xl text-5xl sm:text-7xl font-extrabold mt-4">
+            Home services, tracked like a delivery.
+          </h1>
+          <p className="mt-4 max-w-xl text-lg text-white/80">
+            Lawn, pressure wash, gutters, handyman. Locked price. Live pin. Deposit so they show up. Same product shape as DoorDash and Uber Eats — crews, not burritos.
+          </p>
+          <form onSubmit={go} className="mt-8 flex flex-col sm:flex-row gap-2 max-w-xl">
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Address, city, or ZIP"
+              className="!rounded-full flex-1"
+            />
+            <button className="btn btn-acid" type="submit">
+              Find crews
+            </button>
+          </form>
+          {miss ? <p className="mt-3 text-sm text-acid">{miss}</p> : null}
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link className="btn btn-acid" href="/book">
-              {d.ctaBook}
+            <Link className="btn btn-ghost !text-paper !border-white/30" href="/dash/apply">
+              Become a crew
             </Link>
-            <Link className="btn btn-ghost !text-paper !border-white/30" href="/pros">
-              {d.ctaPros}
+            <Link className="btn btn-ghost !text-paper !border-white/30" href="/merchant">
+              Become a business
             </Link>
-          </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
-            <MapLive label={d.live} eta="Forest Acres · driveway wash $149" />
-            <div className="card !bg-ink text-paper p-5">
-              <p className="text-xs uppercase tracking-widest opacity-60">Locked today</p>
-              <ul className="mt-3 space-y-3 text-sm">
-                <li className="flex justify-between"><span>Lawn · small</span><b>$49</b></li>
-                <li className="flex justify-between"><span>Driveway</span><b>$119–189</b></li>
-                <li className="flex justify-between"><span>Gutters</span><b>$129–219</b></li>
-                <li className="flex justify-between"><span>House wash</span><b>$229+</b></li>
-              </ul>
-              <p className="mt-4 text-xs opacity-60">20% deposit. Rest when photos hit your phone.</p>
-            </div>
+            <Link className="btn btn-ghost !text-paper !border-white/30" href="/pass">
+              ShowPass $9.99
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="py-14">
         <div className="wrap">
-          <h2 className="text-4xl sm:text-5xl max-w-2xl">{d.howTitle}</h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              [d.how1t, d.how1],
-              [d.how2t, d.how2],
-              [d.how3t, d.how3],
-            ].map(([t, b], i) => (
-              <article key={t} className="card p-6">
-                <p className="text-acid bg-ink w-8 h-8 rounded-full grid place-items-center font-bold">
-                  {i + 1}
-                </p>
-                <h3 className="mt-4 text-2xl">{t}</h3>
-                <p className="mt-2 text-[var(--muted)]">{b}</p>
-              </article>
+          <h2 className="text-4xl">Pick a market</h2>
+          <p className="mt-2 text-[var(--muted)]">Live density first. Everywhere else still books — we route a demo crew.</p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {CITIES.map((c) => (
+              <button
+                key={c.slug}
+                type="button"
+                className="card p-4 text-left"
+                onClick={() => {
+                  setCitySlug(c.slug);
+                  router.push(`/c/${c.slug}`);
+                }}
+              >
+                <div className="flex justify-between text-xs font-bold uppercase tracking-wide">
+                  <span className={c.busy === "hot" ? "text-moss" : "text-[var(--muted)]"}>
+                    {c.busy === "hot" ? "Hot" : c.busy === "busy" ? "Busy" : "Open"}
+                  </span>
+                  <span>{c.eta} min</span>
+                </div>
+                <h3 className="text-2xl mt-2">
+                  {c.name}
+                  <span className="text-base opacity-50"> {c.state}</span>
+                </h3>
+                <p className="text-sm text-[var(--muted)]">{c.crews} crews on the board</p>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="pb-16">
+      <section className="pb-14">
         <div className="wrap">
-          <h2 className="text-4xl">{d.services}</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SERVICES.map((s) => {
-              const meta = d.svc[s.id as ServiceId];
-              const from = Object.values(s.prices).filter(Boolean)[0];
-              return (
-                <Link key={s.id} href={`/book?service=${s.id}`} className="card group">
-                  <img src={s.photo} alt="" className="h-44 w-full object-cover" />
-                  <div className="p-4">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <h3 className="text-xl">{meta.name}</h3>
-                      <span className="text-sm font-bold">
-                        {from ? `from $${from}` : "quote"}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-[var(--muted)]">{meta.blurb}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="pb-16">
-        <div className="wrap">
-          <h2 className="text-4xl">{d.crews}</h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {CREWS.map((c) => (
-              <Link key={c.id} href={`/shop/${c.slug}`} className="card flex gap-4 p-3">
-                <img src={c.photo} alt="" className="h-28 w-28 rounded-xl object-cover" />
-                <div>
-                  <p className="text-xs font-bold text-moss">
-                    {c.etaMin} min · {c.rating} ★ · {c.jobs} jobs
-                  </p>
-                  <h3 className="text-2xl mt-1">{c.name}</h3>
-                  <p className="text-sm">{c.trade}</p>
-                  <p className="text-xs text-[var(--muted)] mt-1">{c.areas.join(" · ")}</p>
-                </div>
+          <h2 className="text-4xl">Three apps. One marketplace.</h2>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {[
+              ["Customer", "Browse, cart, promo, schedule, live map, reorder, ShowPass, group jobs, gift cards.", "/book"],
+              ["Crew", "Zip signup, ID + selfie, FCRA background, MVR, insurance, W-9, instant pay, hotspots, Silver/Gold/Platinum.", "/dash/apply"],
+              ["Business", "Store hours, service menu, tablet orders, pause, prep time, promos, weekly payouts.", "/merchant"],
+            ].map(([t, b, href]) => (
+              <Link key={t} href={href} className="card p-6">
+                <h3 className="text-2xl">{t}</h3>
+                <p className="mt-2 text-[var(--muted)]">{b}</p>
               </Link>
             ))}
           </div>
-          <p className="mt-4 text-sm text-[var(--muted)]">
-            {AREAS_SC.slice(0, 12).join(" · ")}
-          </p>
         </div>
       </section>
 
       <section className="pb-16">
-        <div className="wrap grid gap-6 md:grid-cols-2 items-center">
-          <img src="/photos/flyer.jpg" alt="Handmade flyer next to a booking phone" className="rounded-3xl" />
-          <div>
-            <h2 className="text-4xl">{d.flyerTitle}</h2>
-            <p className="mt-4 text-[var(--muted)] text-lg">{d.flyer}</p>
-            <Link className="btn btn-ink mt-6" href="/pros">
-              {d.flyerCta}
+        <div className="wrap grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {SERVICES.map((s) => (
+            <Link key={s.id} href={`/book?service=${s.id}`} className="card">
+              <img src={s.photo} alt="" className="h-36 w-full object-cover" />
+              <p className="p-3 font-bold">{d.svc[s.id].name}</p>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="relative text-paper">
-        <img src="/photos/pr.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-ink/70" />
-        <div className="wrap relative py-20">
-          <p className="chip w-fit">San Juan · Bayamón · Carolina · Guaynabo</p>
-          <h2 className="mt-4 text-5xl max-w-xl">{d.prTitle}</h2>
-          <p className="mt-4 max-w-lg text-white/80">{d.prBody}</p>
-          <Link className="btn btn-acid mt-6" href="/waitlist">
-            {d.waitlist}
-          </Link>
+          ))}
         </div>
       </section>
     </main>

@@ -46,6 +46,7 @@ export default function TrackPage() {
   const p = jobProgress(job);
   const label =
     p.status === "booked" ? d.booked :
+    p.status === "confirmed" ? "Merchant confirmed" :
     p.status === "enroute" ? d.onway :
     p.status === "onsite" ? d.onsite : d.done;
 
