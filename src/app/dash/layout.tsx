@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BottomNav } from "@/components/Shell";
+import { ModeBanner } from "@/components/ModeBanner";
 import { getIdentity } from "@/lib/store";
 import { useEffect, useState } from "react";
 
@@ -17,6 +18,7 @@ export default function DashLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="min-h-full bg-[#10150f] text-paper flex flex-col">
+      <ModeBanner />
       <header className="flex items-center justify-between px-4 py-3 border-b border-white/10">
         <Link href={ok ? "/dash" : "/dash/apply"} className="display font-bold text-lg">
           SHOWUP <span className="text-acid">Crew</span>

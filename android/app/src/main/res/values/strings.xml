@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SHOWUP</string>
+    <string name="title_activity_main">SHOWUP</string>
+    <string name="package_name">com.showup.app</string>
+    <string name="custom_url_scheme">com.showup.app</string>
+</resources>

@@ -64,9 +64,9 @@ function BookInner() {
     setAnswers(defaults(id));
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canBook) return;
+    if (!canBook && !quote.manualReview) return;
     const crew = matchCrews(service, answers, zip)[0];
     const id = jobId();
     upsertJob({
@@ -118,6 +118,15 @@ function BookInner() {
         bullets: quote.lines.filter((l) => l.amount !== 0).slice(0, 8).map((l) => `${l.label}${l.amount ? ` ${l.amount > 0 ? "+" : ""}$${l.amount}` : ""}`),
       },
     ]);
+    const pay = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jobId: id, amount: quote.deposit }),
+    }).then((r) => r.json());
+    if (pay.url) {
+      window.location.href = pay.url;
+      return;
+    }
     router.push(`/track/${id}`);
   }
 

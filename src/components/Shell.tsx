@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "./Providers";
+import { ModeBanner } from "./ModeBanner";
 import { cityBySlug } from "@/lib/cities";
 import { getCitySlug } from "@/lib/store";
 import { useEffect, useState } from "react";
@@ -24,6 +25,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-full flex flex-col">
+      <ModeBanner />
       <header
         className={`sticky top-0 z-40 ${dark ? "bg-ink/80 text-paper" : "bg-paper/90 text-ink"} backdrop-blur-md`}
       >
@@ -74,7 +76,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </div>
           <div className="grid gap-1">
             <Link href="/support">Support</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
             <Link href="/legal">Legal · FCRA sandbox</Link>
+            <Link href="/account/delete">Delete data</Link>
             <Link href="/account">Account</Link>
             <Link href="/gift">Gift cards</Link>
           </div>

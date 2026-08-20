@@ -3,7 +3,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Lang } from "@/lib/types";
 import { t, type Dict } from "@/lib/i18n";
-import { getLang, setLang as persist } from "@/lib/store";
+import { getJobs, getLang, setLang as persist, upsertJob } from "@/lib/store";
+import { cloudLoadJobs, cloudLoadOffers } from "@/lib/cloud";
+import { setOffers } from "@/lib/store";
 
 const Ctx = createContext<{
   lang: Lang;
@@ -16,6 +18,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setLangState(getLang());
+    void (async () => {
+      const remote = await cloudLoadJobs();
+      const local = getJobs();
+      const seen = new Set(local.map((j) => j.id));
+      remote.forEach((j) => {
+        if (!seen.has(j.id)) upsertJob(j);
+      });
+      const offers = await cloudLoadOffers();
+      if (offers.length) setOffers(offers);
+    })();
   }, []);
 
   const value = useMemo(

@@ -11,6 +11,7 @@ import type {
 } from "./types";
 import { SEED_LEADS } from "./catalog";
 import { progressPct, stateFromElapsed } from "./job-machine";
+import { cloudUpsertIdentity, cloudUpsertJob, cloudUpsertOffer } from "./cloud";
 
 const K = {
   jobs: "showup.jobs",
@@ -64,6 +65,7 @@ export function upsertJob(job: Job) {
   const all = getJobs().filter((j) => j.id !== job.id);
   all.unshift(job);
   write(K.jobs, all);
+  void cloudUpsertJob(job);
   return job;
 }
 
@@ -174,6 +176,7 @@ export function getIdentity(): IdentityApp {
 
 export function setIdentity(a: IdentityApp) {
   write(K.identity, a);
+  void cloudUpsertIdentity(a);
 }
 
 export function getCrewSession(): CrewSession {
@@ -241,4 +244,5 @@ export function getOffers(): Offer[] {
 
 export function setOffers(o: Offer[]) {
   write(K.offers, o);
+  o.forEach((offer) => void cloudUpsertOffer(offer));
 }

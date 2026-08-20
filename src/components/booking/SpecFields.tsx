@@ -3,6 +3,7 @@
 import type { Answers, PhotoSlot } from "@/lib/quote-engine";
 import { heightLabel } from "@/lib/quote-engine";
 import type { Question } from "@/lib/spec";
+import { takeNativePhoto } from "@/lib/native";
 
 function setAns(answers: Answers, id: string, value: unknown, onChange: (a: Answers) => void) {
   onChange({ ...answers, [id]: value });
@@ -172,6 +173,20 @@ export function SpecField({
                     onChange({ ...answers, photos: [...next, slotPhoto] });
                   }}
                 />
+                <button
+                  type="button"
+                  className="text-xs underline mt-1"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    const dataUrl = await takeNativePhoto();
+                    if (!dataUrl) return;
+                    const slotPhoto: PhotoSlot = { id: `${slot.id}-${Date.now()}`, name: "camera.jpg", dataUrl };
+                    const next = photos.filter((p) => !p.id.startsWith(`${slot.id}-`));
+                    onChange({ ...answers, photos: [...next, slotPhoto] });
+                  }}
+                >
+                  Native camera
+                </button>
               </label>
             );
           })}
