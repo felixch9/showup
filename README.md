@@ -1,18 +1,20 @@
 # SHOWUP
 
-Nationwide home-services marketplace. DoorDash / Uber Eats product shape — lawn, pressure wash, gutters, handyman — not food.
+https://showup-wheat.vercel.app
 
-Three apps:
+Home-services marketplace prototype (lawn, wash, gutters) with customer, crew, and business screens. Built by Felix R. Collazo Helgeson. Columbia, SC.
 
-- **Customer** `/` `/c/[city]` `/book` `/track` `/orders` `/pass` `/gift` `/group`
-- **Crew** `/dash/apply` (identity) `/dash` `/dash/offers` `/dash/earnings` `/dash/ratings`
-- **Business** `/merchant` tablet, menu, hours, promos, payouts
+This is a demo, not a live marketplace. Persistence is browser localStorage. Job states advance on a demo clock. Stripe and Supabase stay off unless you turn them on. The yellow DEMO MODE banner on the live site is correct.
 
-Identity signup follows public Dasher / Uber courier docs: ZIP + 2FA, legal name, 18+, SSN flag (no number stored), vehicle, insurance, gov ID + selfie match, FCRA + MVR consent, W-9/payout, safety quiz, then a sandbox screening pipeline. Files never leave the browser.
-
-Not affiliated with DoorDash or Uber.
+## Run
 
 ```bash
-cd C:\Users\felix\showup
+npm install
 npm run dev
 ```
+
+## Stack
+
+Next.js, React, TypeScript, Tailwind CSS. Optional Supabase and Stripe behind env flags.
+
+MIT. Not affiliated with DoorDash or Uber.
