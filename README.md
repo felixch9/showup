@@ -1,18 +1,27 @@
 # SHOWUP
 
-Nationwide home-services marketplace. DoorDash / Uber Eats product shape — lawn, pressure wash, gutters, handyman — not food.
+https://showup-wheat.vercel.app
 
-Three apps:
+Next.js marketplace prototype for outdoor home jobs (lawn, wash, gutters) with customer, crew, and business screens. Built by Felix R. Collazo Helgeson ([felixch9](https://github.com/felixch9)). Columbia, SC. CompTIA Security+ ce.
 
-- **Customer** `/` `/c/[city]` `/book` `/track` `/orders` `/pass` `/gift` `/group`
-- **Crew** `/dash/apply` (identity) `/dash` `/dash/offers` `/dash/earnings` `/dash/ratings`
-- **Business** `/merchant` tablet, menu, hours, promos, payouts
+**Honesty:** this is a demo, not a live marketplace. Persistence is browser `localStorage`. Job states advance on a demo clock (`src/lib/job-machine.ts`). Stripe and Supabase are gated behind env flags and unused unless you turn them on. No production money. No production database. The yellow **DEMO MODE** banner on the live site is correct; leave it on.
 
-Identity signup follows public Dasher / Uber courier docs: ZIP + 2FA, legal name, 18+, SSN flag (no number stored), vehicle, insurance, gov ID + selfie match, FCRA + MVR consent, W-9/payout, safety quiz, then a sandbox screening pipeline. Files never leave the browser.
+## Stack
 
-Not affiliated with DoorDash or Uber.
+From `package.json`: Next.js 16, React 19, TypeScript, Tailwind CSS, Supabase JS, Stripe, Capacitor 8.
+
+## Run
 
 ```bash
-cd C:\Users\felix\showup
+npm install
 npm run dev
 ```
+
+Copy `.env.example` to `.env.local` only if you want optional keys. The app runs without them. Keep `NEXT_PUBLIC_SHOWUP_LIVE` unset or `false` so DEMO MODE stays on.
+
+## More
+
+- Product notes: [`docs/CTO.md`](docs/CTO.md)
+- Service spec engine: [`src/lib/spec.ts`](src/lib/spec.ts)
+
+MIT. Not affiliated with DoorDash or Uber.
