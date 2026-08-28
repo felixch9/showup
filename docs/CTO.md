@@ -2,7 +2,7 @@
 
 **Product:** DoorDash-shaped marketplace for home services (lawn, pressure wash, gutters, yard, junk). Not food. Not a DoorDash clone brand.
 
-**Repo:** `C:\Users\felix\showup` · [github.com/felixch9/showup](https://github.com/felixch9/showup)
+**Repo:** [github.com/felixch9/showup](https://github.com/felixch9/showup)
 
 **Current stage:** High-fidelity **web prototype**. Three surfaces (customer, crew, business) + service spec engine + instant quote + identity *sandbox*. Persistence is **browser localStorage**. No real money, no real CRA, no production DB.
 
