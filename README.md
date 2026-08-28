@@ -2,7 +2,7 @@
 
 https://showup-wheat.vercel.app
 
-Next.js marketplace prototype for outdoor home jobs (lawn, wash, gutters) with customer, crew, and business screens. Built by Felix R. Collazo Helgeson ([felixch9](https://github.com/felixch9)). Columbia, SC. CompTIA Security+ ce.
+Next.js marketplace prototype for outdoor home jobs (lawn, wash, gutters) with customer, crew, and business screens. Built by Felix R. Collazo Helgeson ([felixch9](https://github.com/felixch9)). Columbia, SC.
 
 **Honesty:** this is a demo, not a live marketplace. Persistence is browser `localStorage`. Job states advance on a demo clock (`src/lib/job-machine.ts`). Stripe and Supabase are gated behind env flags and unused unless you turn them on. No production money. No production database. The yellow **DEMO MODE** banner on the live site is correct; leave it on.
 
